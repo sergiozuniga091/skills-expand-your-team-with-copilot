@@ -59,9 +59,23 @@ jobs:
           issue-number: ${{ env.ISSUE_NUMBER }}
           file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
 
-      - name: Disable current workflow and enable next one
-        run: |
-          gh workflow disable "${{github.workflow}}"
-          gh workflow enable "Step 3"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Enable next workflow and disable current one
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const nextWorkflow = '3-prepare-environment.yml';
+            try {
+              await github.rest.actions.getWorkflow({ owner, repo, workflow_id: nextWorkflow });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              const { data } = await github.rest.repos.getContent({
+                owner, repo, path: `.github/workflows/${nextWorkflow}`
+              });
+              if (data.type !== 'file') throw error;
+              core.info(`${nextWorkflow} is not registered yet; it can run on its first matching event.`);
+              await github.rest.actions.disableWorkflow({ owner, repo, workflow_id: '2-collaborate.yml' });
+              return;
+            }
+            await github.rest.actions.enableWorkflow({ owner, repo, workflow_id: nextWorkflow });
+            await github.rest.actions.disableWorkflow({ owner, repo, workflow_id: '2-collaborate.yml' });
