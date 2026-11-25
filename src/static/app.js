@@ -295,9 +295,9 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       const startTime = formatTime(details.schedule_details.start_time);
-      const endTime = formatTime(details.schedule_details.end_time);
+      const endTime = details.schedule_details.end_time;
 
-      return `${days}, ${startTime} - ${endTime}`;
+      return `${days}, ${startTime}${endTime ? ` - ${formatTime(endTime)}` : ""}`;
     }
 
     // Fallback to the string format if schedule_details isn't available
