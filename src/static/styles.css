@@ -5,6 +5,8 @@
   --primary-light: #534bae;
   --primary-dark: #000051;
   --primary-text: #ffffff;
+  --heading: var(--primary);
+  --sharing-hover: #e8eaf6;
 
   /* Secondary colors */
   --secondary: #ff6f00;
@@ -30,6 +32,19 @@
   --error-light: #ffebee;
   --info: #0c5460;
   --info-light: #d1ecf1;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #151821;
+  --surface: #222733;
+  --text-primary: #f0f1f5;
+  --text-secondary: #bec5d2;
+  --border: #525b6b;
+  --border-light: #3a4250;
+  --border-focus: #8490a4;
+  --heading: #b7c3ff;
+  --sharing-hover: #343e55;
 }
 
 * {
@@ -91,7 +106,7 @@ section h3 {
   margin-bottom: 15px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
-  color: var(--primary);
+  color: var(--heading);
   font-size: 1.1rem;
 }
 
@@ -113,7 +128,7 @@ section h3 {
   margin-bottom: 15px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
-  color: var(--primary);
+  color: var(--heading);
   font-size: 1.1rem;
 }
 
@@ -171,7 +186,7 @@ section h3 {
 
 .activity-card h4 {
   margin-bottom: 8px;
-  color: var(--primary);
+  color: var(--heading);
   font-size: 1rem;
   letter-spacing: 0.3px;
   padding-bottom: 6px;
@@ -220,10 +235,10 @@ section h3 {
   justify-content: center;
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--heading);
   border-radius: 4px;
   background: var(--surface);
-  color: var(--primary);
+  color: var(--heading);
   font-size: 0.8rem;
   line-height: 1.4;
   text-decoration: none;
@@ -231,7 +246,7 @@ section h3 {
 }
 
 .sharing-actions .sharing-control:hover {
-  background: #e8eaf6;
+  background: var(--sharing-hover);
 }
 
 .sharing-control:focus-visible,
@@ -323,7 +338,7 @@ section h3 {
 }
 
 .participants-list h5 {
-  color: var(--primary);
+  color: var(--heading);
   margin-bottom: 5px;
   font-size: 0.8em;
 }
@@ -522,7 +537,7 @@ button {
 
 /* Login modal specific styling */
 #login-modal .modal-content h3 {
-  color: var(--primary);
+  color: var(--heading);
   font-size: 1.2rem;
   margin-bottom: 15px;
   text-align: center;
@@ -694,6 +709,15 @@ footer {
   position: absolute;
   top: 10px;
   right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 767px) {
+  header {
+    padding-top: 55px;
+  }
 }
 
 #user-status {
