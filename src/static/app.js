@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  let pendingActivityScroll = true;
 
   // Authentication state
   let currentUser = null;
@@ -470,12 +471,161 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+    highlightLinkedActivity();
+  }
+
+  function activityCardId(name) {
+    return `activity-${name}`;
+  }
+
+  function activityShareUrl(name) {
+    // Start from the public page path, excluding query strings and old fragments.
+    const url = new URL(window.location.pathname, window.location.origin);
+    url.hash = encodeURIComponent(activityCardId(name));
+    return url.href;
+  }
+
+  function highlightLinkedActivity() {
+    let cardId;
+    try {
+      cardId = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return;
+    }
+    if (!cardId.startsWith("activity-")) {
+      return;
+    }
+
+    const card = document.getElementById(cardId);
+    if (!card || !activitiesList.contains(card)) {
+      return;
+    }
+    card.classList.add("activity-card-linked");
+    if (pendingActivityScroll) {
+      card.scrollIntoView({ block: "center" });
+      pendingActivityScroll = false;
+    }
+  }
+
+  window.addEventListener("hashchange", () => {
+    activitiesList.querySelectorAll(".activity-card-linked").forEach((card) => {
+      card.classList.remove("activity-card-linked");
+    });
+    pendingActivityScroll = true;
+    highlightLinkedActivity();
+  });
+
+  function createSharingControls(name, details) {
+    const url = activityShareUrl(name);
+    // Explicitly include only public fields, never participant or teacher data.
+    const text = `${name}\n${details.description}\nSchedule: ${formatSchedule(details)}`;
+    const sharing = document.createElement("div");
+    sharing.className = "activity-sharing";
+    sharing.setAttribute("role", "group");
+    sharing.setAttribute("aria-label", `Share ${name}`);
+
+    const heading = document.createElement("p");
+    heading.className = "sharing-heading";
+    heading.textContent = "Share activity";
+    sharing.appendChild(heading);
+
+    const actions = document.createElement("div");
+    actions.className = "sharing-actions";
+    sharing.appendChild(actions);
+
+    const platforms = [
+      ["Facebook", "https://www.facebook.com/sharer/sharer.php", { u: url, quote: text }],
+      ["WhatsApp", "https://wa.me/", { text: `${text}\n${url}` }],
+      ["X", "https://twitter.com/intent/tweet", { text, url }],
+    ];
+    platforms.forEach(([label, endpoint, parameters]) => {
+      const shareUrl = new URL(endpoint);
+      Object.entries(parameters).forEach(([key, value]) => {
+        shareUrl.searchParams.set(key, value);
+      });
+      const link = document.createElement("a");
+      link.className = "sharing-control";
+      link.textContent = label;
+      link.href = shareUrl.href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.setAttribute("aria-label", `Share ${name} on ${label} (opens in a new tab)`);
+      actions.appendChild(link);
+    });
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "sharing-control";
+    copyButton.textContent = "Copy link";
+    copyButton.setAttribute("aria-label", `Copy link to ${name}`);
+    actions.appendChild(copyButton);
+
+    const manualCopy = document.createElement("label");
+    manualCopy.className = "sharing-manual-copy";
+    manualCopy.hidden = true;
+    const labelText = document.createElement("span");
+    labelText.textContent = "Activity link (select and copy):";
+    const linkInput = document.createElement("input");
+    linkInput.type = "text";
+    linkInput.readOnly = true;
+    linkInput.value = url;
+    manualCopy.append(labelText, linkInput);
+    sharing.appendChild(manualCopy);
+
+    const status = document.createElement("p");
+    status.className = "sharing-status";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    sharing.appendChild(status);
+
+    function showManualCopy() {
+      manualCopy.hidden = false;
+      status.textContent = "Select the activity link and copy it to share.";
+      linkInput.focus();
+      linkInput.select();
+    }
+
+    copyButton.addEventListener("click", async () => {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          showManualCopy();
+          return;
+        }
+        await navigator.clipboard.writeText(url);
+        manualCopy.hidden = true;
+        status.textContent = "Activity link copied.";
+      } catch {
+        showManualCopy();
+      }
+    });
+
+    if (typeof navigator.share === "function") {
+      const shareButton = document.createElement("button");
+      shareButton.type = "button";
+      shareButton.className = "sharing-control";
+      shareButton.textContent = "Share…";
+      shareButton.setAttribute("aria-label", `More sharing options for ${name}`);
+      shareButton.addEventListener("click", async () => {
+        try {
+          await navigator.share({ title: name, text, url });
+          status.textContent = "Activity shared.";
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            showManualCopy();
+          }
+        }
+      });
+      actions.appendChild(shareButton);
+    }
+
+    return sharing;
   }
 
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.id = activityCardId(name);
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -587,6 +737,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    activityCard.appendChild(createSharingControls(name, details));
     activitiesList.appendChild(activityCard);
   }
 
