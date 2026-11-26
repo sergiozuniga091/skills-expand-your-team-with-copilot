@@ -190,6 +190,83 @@ section h3 {
   justify-content: center;
 }
 
+.activity-card-linked {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+  scroll-margin: 20px;
+}
+
+.activity-sharing {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+  min-width: 0;
+}
+
+.activity-sharing .sharing-heading {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.sharing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sharing-actions .sharing-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sharing-actions .sharing-control:hover {
+  background: #e8eaf6;
+}
+
+.sharing-control:focus-visible,
+.sharing-manual-copy input:focus-visible {
+  outline: 3px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+.sharing-manual-copy {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+}
+
+.sharing-manual-copy[hidden] {
+  display: none;
+}
+
+.sharing-manual-copy input {
+  width: 100%;
+  min-width: 0;
+  margin-top: 4px;
+  padding: 8px;
+}
+
+.activity-sharing .sharing-status {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.sharing-status:empty {
+  display: none;
+}
+
 /* Activity Tag */
 .activity-tag {
   position: absolute;
